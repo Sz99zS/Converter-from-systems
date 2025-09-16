@@ -21,7 +21,7 @@
             padding: 25px 30px;
             border-radius: 15px;
             box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-            width: 320px;
+            width: 350px;
             text-align: center;
             animation: fadeIn 0.8s ease;
         }
@@ -33,7 +33,7 @@
             margin-bottom: 15 px;
             color: #333;
         }
-        input{
+        input, select, button{
             display: block;
             width: 90%;
             margin: 10px auto;
@@ -57,7 +57,7 @@
         button:hover {
             background: #45a049;
         }
-        .result {
+        #result {
             margin-top: 15px;
             font-size: 18px;
             font-weight: bold;
@@ -68,24 +68,57 @@
 
 <body>
     <div class = "container">
-        <h1> Input number </h1>
-        <input type = "number" id = "decimal" placeholder="Enter decimal number">
+        <h1> Number converter </h1>
+        <input type = "text" id = "numberInput" placeholder="Enter number">
+        <div>
+            <label>From:</label>
+            <select id="fromBase">
+                <option value="10">Decimal</option>
+                <option value="2">Binary</option>
+                <option value="8">Octal</option>
+                <option value="16">Hexadecimal</option>
+            </select>
+
+            <label>To:</label>
+            <select id="toBase">
+                <option value="10">Decimal</option>
+                <option value="2">Binary</option>
+                <option value="8">Octal</option>
+                <option value="16">Hexadecimal</option>
+            </select>
+        </div>
+
         <button id = "convert"> Convert </button>
-        <div class="result" id="result"></div>
+        <p id="result"></p>
     </div>
     <script>
-        const input = document.getElementById('decimal');
+        const input = document.getElementById('numberInput');
+        const fromBase = document.getElementById('fromBase');
+        const toBase = document.getElementById('toBase');
         const button = document.getElementById('convert');
         const result = document.getElementById('result');
 
         button.addEventListener('click', () => {
-            let value = parseInt(input.value);
-            if (isNaN(value)) {
-                result.textContent = "⚠️ Please enter a valid number!";
+            let numStr = input.value.trim();
+            let from = parseInt(fromBase.value);
+            let to = parseInt(toBase.value);
+
+            if (numStr === "") {
+                result.textContent = "⚠️ Bruh, enter a number";
+                return;
             }
-            else {
-                result.textContent = `Binary: ${value.toString(2)}`;
+
+            let decimal;
+            try {
+                decimal = parseInt(numStr, from);
+                if (isNaN(decimal)) throw new Error();
+            } catch {
+                result.textContent = `⚠️ Invalid number for base ${from}!`;
+                return;
             }
+
+            let converted = decimal.toString(to).toUpperCase();
+            result.textContent = `Result: ${converted} (base ${to})`;
         });
     </script>
 </body>
