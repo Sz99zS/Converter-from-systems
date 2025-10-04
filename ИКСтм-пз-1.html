@@ -4,17 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task 1-Decimal → Binary</title>
+    <title>Number Systems Tools</title>
 
     <style>
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
-            margin: 0px;
+            margin: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 30px;
+            gap: 20px;
+            flex-wrap: wrap;
         }
         .container {
             background: #fff;
@@ -23,17 +26,14 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.2);
             width: 350px;
             text-align: center;
-            animation: fadeIn 0.8s ease;
+            animation: fadeIn 0.6s ease;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        h1 {
-            margin-bottom: 15 px;
-            color: #333;
-        }
-        input, select, button{
+        h1 { margin-bottom: 15px; color: #333; }
+        input, select, button {
             display: block;
             width: 90%;
             margin: 10px auto;
@@ -42,7 +42,7 @@
             border-radius: 8px;
             font-size: 16px;
         }
-        button{
+        button {
             padding: 10px 20px;
             margin-top: 10px;
             background: #4caf50;
@@ -54,44 +54,155 @@
             cursor: pointer;
             transition: background 0.3s;
         }
-        button:hover {
-            background: #45a049;
-        }
-        #result {
+        button:hover { background: #45a049; }
+        #result, #evalResult {
             margin-top: 15px;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #222;
+            white-space: pre-wrap;
+        }
+        .nav-btn {
+            background: #2196F3;
+            margin-top: 5px;
+        }
+        .nav-btn:hover { background: #1976D2; }
+        /* Анимация конвертера */
+        #converter {
+            display: none;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: all 0.4s ease;
+        }
+        #converter.show {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
         }
     </style>
 </head>
 
 <body>
-    <div class = "container">
-        <h1> Number converter </h1>
-        <input type = "text" id = "numberInput" placeholder="Enter number">
-        <div>
-            <label>From:</label>
-            <select id="fromBase">
-                <option value="10">Decimal</option>
-                <option value="2">Binary</option>
-                <option value="8">Octal</option>
-                <option value="16">Hexadecimal</option>
-            </select>
 
-            <label>To:</label>
-            <select id="toBase">
-                <option value="10">Decimal</option>
-                <option value="2">Binary</option>
-                <option value="8">Octal</option>
-                <option value="16">Hexadecimal</option>
-            </select>
+<!-- Навигация -->
+    <div id="menu" class="container">
+        <h1>Select mode</h1>
+        <button class="nav-btn" onclick="openMode('evaluator')">Expression Evaluator</button>
+        <button class="nav-btn" onclick="openMode('converter')">Number Converter</button>
+    </div>
+
+<!-- Expression Evaluator -->
+
+    <div id="evaluator" class="container" style="display:none;">
+        <h1>Expression Evaluator</h1>
+
+        <label>Select base:</label>
+        <select id="evalBase">
+        <option value="2">Binary</option>
+        <option value="8">Octal</option>
+        <option value="10" selected>Decimal</option>
+        <option value="16">Hexadecimal</option>
+        </select>
+
+        <label>Enter A:</label>
+        <input type="text" id="evalA" placeholder="Number A">
+
+        <label>Enter B:</label>
+        <input type="text" id="evalB" placeholder="Number B">
+
+        <label>Operation:</label>
+        <select id="operation">
+        <option value="+">+</option>
+        <option value="-">-</option>
+        <option value="*">*</option>
+        <option value="/">/</option>
+        </select>
+
+        <button onclick="evaluateExpr()">Calculate</button>
+        <pre id="evalResult"></pre>
+
+        <button class="nav-btn" onclick="toggleConverter()">Open Converter</button>
+        <button onclick="backToMenu()">⬅ Back</button>
+    </div>
+
+<!-- Converter -->
+
+    <div id="converter" class="container" style="display:none;">
+        <h1>Number converter</h1>
+        <input type="text" id="numberInput" placeholder="Enter number">
+        <div>
+        <label>From:</label>
+        <select id="fromBase">
+            <option value="10">Decimal</option>
+            <option value="2">Binary</option>
+            <option value="8">Octal</option>
+            <option value="16">Hexadecimal</option>
+        </select>
+
+        <label>To:</label>
+        <select id="toBase">
+            <option value="10">Decimal</option>
+            <option value="2">Binary</option>
+            <option value="8">Octal</option>
+            <option value="16">Hexadecimal</option>
+        </select>
         </div>
 
-        <button id = "convert"> Convert </button>
+        <button id="convert">Convert</button>
         <p id="result"></p>
+        <button onclick="backToMenu()">⬅ Back</button>
     </div>
+
     <script>
+        // Навигация между режимами
+        function openMode(mode) {
+            document.getElementById("menu").style.display = "none";
+            if (mode === "evaluator") {
+                document.getElementById("evaluator").style.display = "block";
+            } else if (mode === "converter") {
+                document.getElementById("converter").style.display = "block";
+            }
+        }
+
+        function backToMenu() {
+            ["evaluator","converter"].forEach(id => document.getElementById(id).style.display="none");
+            document.getElementById("menu").style.display="block";
+        }
+    // Expression Evaluator
+        function evaluateExpr() {
+            const base = parseInt(document.getElementById("evalBase").value);
+            const aStr = document.getElementById("evalA").value.trim();
+            const bStr = document.getElementById("evalB").value.trim();
+            const op = document.getElementById("operation").value;
+            const out = document.getElementById("evalResult");
+
+            if (!aStr || !bStr) {
+                out.innerText = "⚠️ Enter A and B!";
+                return;
+            }
+
+            let A = parseInt(aStr, base);
+            let B = parseInt(bStr, base);
+            if (isNaN(A) || isNaN(B)) {
+                out.innerText = `⚠️ Invalid numbers for base ${base}`;
+                return;
+            }
+
+            let res;
+            switch (op) {
+                case "+": res = A + B; break;
+                case "-": res = A - B; break;
+                case "*": res = A * B; break;
+                case "/":
+                    if (B === 0) { out.innerText = "⚠️ Division by zero"; return; }
+                    res = Math.floor(A / B);
+                    break;
+            }
+
+            out.innerText = `Result: ${res.toString(base).toUpperCase()} (base ${base})`;
+        }
+
+    // Converter
         const input = document.getElementById('numberInput');
         const fromBase = document.getElementById('fromBase');
         const toBase = document.getElementById('toBase');
@@ -104,7 +215,7 @@
             let to = parseInt(toBase.value);
 
             if (numStr === "") {
-                result.textContent = "⚠️ Bruh, enter a number";
+                result.textContent = "⚠️ Enter a number";
                 return;
             }
 
@@ -120,6 +231,17 @@
             let converted = decimal.toString(to).toUpperCase();
             result.textContent = `Result: ${converted} (base ${to})`;
         });
+    // Открытие конвертера рядом с Evaluator
+        function toggleConverter() {
+            const conv = document.getElementById("converter");
+            if (conv.classList.contains("show")) {
+                conv.classList.remove("show");
+                setTimeout(() => conv.style.display = "none", 400);
+            } else {
+                conv.style.display = "block";
+                setTimeout(() => conv.classList.add("show"), 10);
+            }
+        }
     </script>
 </body>
 </html>
